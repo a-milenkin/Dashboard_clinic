@@ -58,7 +58,7 @@ num_cols = ['№ попытки', 'Количество фолликулов',
 
 col_means_dict = {}
 for col in num_cols:
-    col_means_dict[col] = [full_df[col].mean(), full_df[col].mean()/300]  #[full_df[col].mean(), full_df[col].std()]
+    col_means_dict[col] = [full_df[col].mean(), full_df[col].mean()/20]  #[full_df[col].mean(), full_df[col].std()]
 df = full_df.copy()
 
 
@@ -153,14 +153,24 @@ app.layout = html.Div([
                             {"label": 'Только отклонения', "value": 'anomal'},{"label": 'Только нормальные', "value": 'normal'}],),
                 html.Div(children=[html.Div(children="Количество ячеек со значимым отклонением (красные ячейки) в одной строке", className="menu-title"),
                                    dcc.RangeSlider(className="menu-RangeSlider",id="head-AnomalCount-filter",
-                                    marks={i: '{}'.format(i) for i in range(0, 26, 3)},
+                                    marks={i: '{}'.format(i) for i in range(0, 26, 3)}, #tooltip = {"always_visible" : True, 'placement' : 'left' },
                                                    count=1, min=0, max=25, step=1, value=[0, 18])], ),
+
+                #TODOs дозаменить старые RangeSlider на вот этот ниже. Вторым этапом востановить функциональность.
+                # html.Div([html.Div(children="Количество ячеек со значимым отклонением (красные ячейки) в одной строке", className="menu-title"),
+                #             dcc.Input(type='text', value='10 %', ),
+                #             dcc.RangeSlider(id='condition-range-slider',
+                #                                           min=0, max=200, value=[10, 190], allowCross=False, className="menu-RangeSlider",),
+                #             dcc.Input(type='text', value='200 %')], style={"display": "grid", "grid-template-columns": "10% 40% 10%"}),
+
                 html.Div(children=[html.Div(children="Степень отклонения от нормы (Вы можете подобрать насколько процентов значение в ячейке может отклоняться от среднего значения в данном столбце)", className="menu-title"),
                                     dcc.Slider(className="menu-RangeSlider",id="head-AnomalLevel-filter",#tooltip={"value":'Количество сигм'},
-                                    marks={i: '{}'.format(i) for i in range(0, 6, 1)}, min=0, max=5, step=1, value=1)], ),
+                                    marks={i: '{}%'.format(i) for i in range(0, 201, 20)}, min=0, max=200, step=1, value=10)], ),
+
+
                 html.Div(children=[html.Div(children="Количество незаполненных врачом ячеек в одной строке", className="menu-title"),
                                     dcc.RangeSlider(className="menu-RangeSlider",id="head-EmptyCount-filter",
-                                                    marks={i: '{}'.format(i) for i in range(0, 31, 5)},
+                                                    marks={i: '{} штук'.format(i) for i in range(0, 31, 5)},
                                                                    count=1, min=0, max=30, step=1, value=[15, 30])], ),]),
             html.Div(children=[ html.Div(children="Период времени", className="menu-title"),
                 dcc.DatePickerRange(id="head-date-range", min_date_allowed=data["Дата пункции"].min(),
@@ -279,7 +289,7 @@ def update_charts_color(filtered_data, selected_column_list):
         filtered_data.sort_values(by=selected_column_list_mask, inplace=True, axis=0, ascending=False)
     return filtered_data
 
-# Фитрация таблицы по количеству аномалий с панели
+# Фитрация таблицы по количеству аномалий с панели и тп
 @app.callback(
     Output("table-filtered", 'children'),
     [Input("datatable-interactivity", "selected_columns"),
